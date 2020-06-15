@@ -1,22 +1,62 @@
 <template>
   <v-container>
     <v-list>
-      <v-list-group v-for="i in 100" :key="i">
-
-        <template v-slot:activator>
-          <v-list-item-content>
-            <v-list-item-title>Admin</v-list-item-title>
-          </v-list-item-content>
-        </template>
-
-        <v-list-item v-for="c in 3" :key="`sg-i${c}`">
-          <v-list-item-icon>
-            <v-icon>mdi-film</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>band dream {{i}}</v-list-item-title>
+      <template v-for="(anime, i) in animes">
+        <v-list-item
+          v-if="anime.isDir"
+          :key="`${JSON.stringify(anime)}-${i}`"
+          :to="{ name: 'Animes', query: { dir: anime.name, root: anime.src } }"
+        >
+          <v-list-item-title>{{anime.name}} {{anime.src}}</v-list-item-title>
         </v-list-item>
 
-      </v-list-group>
+        <v-list-item
+          v-else
+          :key="`${JSON.stringify(anime)}-${i}`"
+          :to="{ name: 'Watch', query: { src: `${anime.src}\\${anime.name}`, root: anime.src } }"
+        >
+          <v-list-item-title>{{anime.name}}</v-list-item-title>
+        </v-list-item>
+      </template>
     </v-list>
   </v-container>
 </template>
+
+<script>
+import axios from "@/services/axios";
+
+export default {
+  data() {
+    return {
+      animes: []
+    };
+  },
+  created() {
+    this.getAnime(this.$route.query.dir, this.$route.query.root);
+  },
+  watch: {
+    $route(to, from) {
+      this.getAnime(this.$route.query.dir, this.$route.query.root);
+    }
+  },
+  methods: {
+    getAnime(anime, root) {
+      if (!anime) {
+        return axios.get("/animes").then(_ => {
+          this.animes = _.data;
+          // setTimeout(this.getAnimes, 1000);
+        });
+      }
+
+      axios
+        .get("/anime", {
+          params: {
+            dir: anime,
+            root
+          }
+        })
+        .then(_ => (this.animes = _.data));
+    }
+  }
+};
+</script>
