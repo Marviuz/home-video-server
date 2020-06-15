@@ -1,0 +1,10 @@
+{
+  "name": "home-video-server",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "concurrently \"cd server && npm run dev\" \"cd client && npm run serve\""
+  },
+  "devDependencies": {
+    "concurrently": "^5.2.0"
+  }
+}
