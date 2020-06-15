@@ -7,7 +7,13 @@
           :key="`${JSON.stringify(anime)}-${i}`"
           :to="{ name: 'Animes', query: { dir: anime.name, root: anime.src } }"
         >
-          <v-list-item-title>{{anime.name}} {{anime.src}}</v-list-item-title>
+          <v-list-item-icon>
+            <v-icon>mdi-folder</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{anime.name}}</v-list-item-title>
+            <v-list-item-subtitle>{{anime.src}}</v-list-item-subtitle>
+          </v-list-item-content>
         </v-list-item>
 
         <v-list-item
@@ -15,7 +21,13 @@
           :key="`${JSON.stringify(anime)}-${i}`"
           :to="{ name: 'Watch', query: { src: `${anime.src}\\${anime.name}`, root: anime.src } }"
         >
-          <v-list-item-title>{{anime.name}}</v-list-item-title>
+          <v-list-item-icon>
+            <v-icon>mdi-filmstrip</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{anime.name}}</v-list-item-title>
+            <v-list-item-subtitle>{{anime.src}}</v-list-item-subtitle>
+          </v-list-item-content>
         </v-list-item>
       </template>
     </v-list>
@@ -44,7 +56,6 @@ export default {
       if (!anime) {
         return axios.get("/animes").then(_ => {
           this.animes = _.data;
-          // setTimeout(this.getAnimes, 1000);
         });
       }
 

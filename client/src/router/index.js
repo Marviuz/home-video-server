@@ -31,4 +31,10 @@ const router = new VueRouter({
   }
 })
 
+router.beforeEach((to, from, next) => {
+  document.title = to.name
+  if (to.name === 'Watch') document.title += ` ${to.query.src.split(/[\\\/]/g).pop()}`
+  next()
+})
+
 export default router
