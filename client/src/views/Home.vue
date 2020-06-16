@@ -3,6 +3,7 @@
     <v-list>
       <template v-for="(anime, i) in animes">
         <v-list-item
+          exact
           v-if="anime.isDir"
           :key="`${JSON.stringify(anime)}-${i}`"
           :to="{ name: 'Animes', query: { dir: anime.name, root: anime.src } }"
@@ -17,6 +18,7 @@
         </v-list-item>
 
         <v-list-item
+          exact
           v-else
           :key="`${JSON.stringify(anime)}-${i}`"
           :to="{ name: 'Watch', query: { src: `${anime.src}\\${anime.name}`, root: anime.src } }"
