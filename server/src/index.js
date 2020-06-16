@@ -45,7 +45,7 @@ app.get('/api/animes', (req, res) => {
 });
 
 app.get('/api/anime', (req, res) => {
-  res.send(getDirsOrVids(join(req.query.root, req.query.dir)));
+  res.send(getDirsOrVids(join(req.query.root, req.query.dir)).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })));
 });
 
 app.get('/api/video', (req, res) => {
