@@ -56,9 +56,7 @@ export default {
   methods: {
     getAnime(anime, root) {
       if (!anime) {
-        return axios.get("/animes").then(_ => {
-          this.animes = _.data;
-        });
+        return axios.get("/animes").then(_ => (this.animes = _.data));
       }
 
       axios
