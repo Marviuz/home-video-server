@@ -24,7 +24,7 @@
           :to="{ name: 'Watch', query: { src: `${anime.src}\\${anime.name}`, root: anime.src } }"
         >
           <v-list-item-icon>
-            <v-icon>mdi-filmstrip</v-icon>
+            <v-icon>mdi-play-circle</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title>{{anime.name}}</v-list-item-title>

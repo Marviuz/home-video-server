@@ -11,7 +11,7 @@ const morgan = require('morgan');
 const ip = require('ip');
 const mime = require('mime-types');
 
-const { dirs, extensions } = require('./config.json');
+const { dirs, extensions } = require('./server.config.json');
 
 const app = express();
 
@@ -40,7 +40,7 @@ const getDirsOrVids = (src) => readdirSync(src).map((name) => {
 }).filter((_) => _.isDir || extensions.includes(_.ext.toLowerCase()));
 
 app.get('/api/animes', (req, res) => {
-  const folders = dirs.map((dir) => getDirsOrVids(dir)).flat().sort();
+  const folders = dirs.map((dir) => getDirsOrVids(dir)).flat().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
   res.send(folders);
 });
 
