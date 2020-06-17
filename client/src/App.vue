@@ -10,7 +10,8 @@
       <v-combobox
         :menu-props="{closeOnContentClick: true}"
         :filter="handleSearch"
-        :items="animes"
+        :items="items"
+        prepend-inner-icon="mdi-magnify"
         solo
         hide-details
         label="Search"
@@ -20,7 +21,7 @@
           <v-list-item
             exact
             :key="`${JSON.stringify(item)}-${index}`"
-            :to="{ name: 'Animes', query: { dir: item.name, root: item.src } }"
+            :to="{ path: item.hyperlink.href, query: {root: item.hyperlink.root} }"
           >
             <v-list-item-icon>
               <v-icon>mdi-folder</v-icon>
@@ -49,17 +50,17 @@
 </template>
 
 <script>
-import axios from "@/services/axios";
+import { getAll } from "@/services/axios";
 
 export default {
   data() {
     return {
-      animes: [],
+      items: [],
       search: null
     };
   },
   created() {
-    axios.get("/animes").then(_ => (this.animes = _.data));
+    getAll().then(_ => (this.items = _.data));
   },
   methods: {
     handleSearch({ ext, isDir, name, src }, query) {

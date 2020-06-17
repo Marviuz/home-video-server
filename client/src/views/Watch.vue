@@ -6,36 +6,37 @@
           @wheel.prevent="onScroll"
           @keyup="handleHotkeys"
           @ended="playNext"
-          :src="`http://${config.ip}:8081/api/video?${queryString({src})}`"
+          :src="src"
           :style="{ outline: 'none', width: '100%' }"
           controls
           autoplay
           ref="vid"
         ></video>
+
         <v-card>
           <v-card-text>
-            <v-card-title>{{$route.query.src.split(/[\/\\]/g).pop()}}</v-card-title>
+            <v-card-title>{{$route.params.path.split(/[\/\\]/g).pop()}}</v-card-title>
           </v-card-text>
         </v-card>
       </v-col>
       <v-col cols="12" md="4">
         <v-list>
-          <template v-for="ep in eps">
+          <template v-for="item in items">
             <v-list-item
               exact
-              v-if="!ep.isDir"
-              :key="JSON.stringify(ep)"
-              :to="{ name: 'Watch', query: { src: `${ep.src}\\${ep.name}`, root: $route.query.root } }"
+              v-if="!item.isDir"
+              :key="JSON.stringify(item)"
+              :to="{ path: '/watch' + item.hyperlink.href, query: { root: item.hyperlink.root } }"
             >
               <v-list-item-icon>
-                <v-icon>{{ $route.query.src.split(/[\/\\]/g).pop() === ep.name ? 'mdi-play-circle' : 'mdi-filmstrip' }}</v-icon>
+                <v-icon>{{ $route.params.path.split(/[\/\\]/g).pop() === item.name ? 'mdi-play-circle' : 'mdi-filmstrip' }}</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title>{{ep.name}}</v-list-item-title>
-                <v-list-item-subtitle>{{ep.src}}\{{ep.name}}</v-list-item-subtitle>
+                <v-list-item-title>{{item.name}}</v-list-item-title>
+                <v-list-item-subtitle>{{item.src}}\{{item.name}}</v-list-item-subtitle>
                 <v-list-item-subtitle
                   class="green--text"
-                  v-if="$route.query.src.split(/[\/\\]/g).pop() === ep.name"
+                  v-if="$route.params.path.split(/[\/\\]/g).pop() === item.name"
                 >
                   <v-icon>mdi-circle-medium</v-icon>
                   <em>Currently Playing</em>
@@ -46,15 +47,15 @@
             <v-list-item
               exact
               v-else
-              :key="JSON.stringify(ep)"
-              :to="{ name: 'Animes', query: { dir: ep.name, root: $route.query.root } }"
+              :key="JSON.stringify(item)"
+              :to="{ path: item.hyperlink.href, query: { root: item.hyperlink.root } }"
             >
               <v-list-item-icon>
                 <v-icon>mdi-folder</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title>{{ep.name}}</v-list-item-title>
-                <v-list-item-subtitle>{{ep.src}}/{{ep.name}}</v-list-item-subtitle>
+                <v-list-item-title>{{item.name}}</v-list-item-title>
+                <v-list-item-subtitle>{{item.src}}/{{item.name}}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
           </template>
@@ -67,37 +68,34 @@
 <script>
 import qs from "query-string";
 import config from "@/config";
-import axios from "@/services/axios";
+import { getItem } from "@/services/axios";
 import { jsonify } from "@/utils/jsonify";
 
 export default {
   data() {
     return {
-      src: this.$route.query.src,
       config,
-      eps: []
+      items: []
     };
+  },
+  computed: {
+    src() {
+      const { query, params } = this.$route;
+
+      return qs.stringifyUrl({
+        url: `http://${config.ip}:8081/api-stream/${params.path}`,
+        query: { root: query.root }
+      });
+    }
   },
   mounted() {
     this.$refs.vid.focus(); // Apply focus to vid to apply hotkeys immediately.
   },
   created() {
-    const root = this.$route.query.root.split(/[\/\\]/g);
-    const dir = root.pop();
-
-    axios
-      .get("/anime", {
-        params: {
-          dir,
-          root: root.join("/")
-        }
-      })
-      .then(_ => (this.eps = _.data));
+    this.getSiblings();
   },
   watch: {
-    $route(to, from) {
-      this.src = this.$route.query.src;
-    }
+    $route(to, from) {}
   },
   methods: {
     onScroll(evt) {
@@ -134,33 +132,37 @@ export default {
       }
     },
     playNext() {
-      const playables = this.eps.filter((ep, i) => !ep.isDir).length;
+      const { query, params } = this.$route;
+
+      const playables = this.items.filter((item, i) => !item.isDir).length;
 
       if (playables === 1) {
+        // Only 1 item in playlist
         this.$refs.vid.currentTime = 0;
         return this.$refs.vid.play();
       }
 
       const nextPlayingIndex =
-        this.eps.findIndex(
-          _ => _.name === this.$route.query.src.split(/[\/\\]/g).pop()
+        this.items.findIndex(
+          _ => _.name === params.path.split(/[\/\\]/g).pop()
         ) + 1;
 
-      let ep = this.eps[nextPlayingIndex];
+      let item = this.items[nextPlayingIndex];
 
-      if (ep) {
+      if (item) {
         this.$router.push({
-          name: "Watch",
-          query: { src: `${ep.src}\\${ep.name}`, root: this.$route.query.root }
+          path: "/watch" + item.hyperlink.href,
+          query: {
+            root: item.hyperlink.root
+          }
         });
       } else {
-        for (const _ of this.eps) {
+        for (const _ of this.items) {
           if (!_.isDir) {
             return this.$router.push({
-              name: "Watch",
+              path: "/watch" + _.hyperlink.href,
               query: {
-                src: `${_.src}\\${_.name}`,
-                root: this.$route.query.root
+                root: _.hyperlink.root
               }
             });
           }
@@ -168,51 +170,60 @@ export default {
       }
     },
     playPrevious() {
-      const playables = this.eps.filter((ep, i) => !ep.isDir).length;
+      const { query, params } = this.$route;
+
+      const playables = this.items.filter((item, i) => !item.isDir).length;
 
       if (playables === 1) {
+        // Only 1 item in playlist
         this.$refs.vid.currentTime = 0;
         return this.$refs.vid.play();
       }
 
-      const playingIndex = this.eps.findIndex(
-        _ => _.name === this.$route.query.src.split(/[\/\\]/g).pop()
+      const playingIndex = this.items.findIndex(
+        _ => _.name === params.path.split(/[\/\\]/g).pop()
       );
 
       let nextPlayingIndex;
-      for (let i = playingIndex; this.eps[i - 1] && i > -1; i--) {
-        if (!this.eps[i - 1].isDir) {
+      for (let i = playingIndex; this.items[i - 1] && i > -1; i--) {
+        if (!this.items[i - 1].isDir) {
           nextPlayingIndex = i - 1;
           break;
         }
-        if (i > 0) i = this.eps.length + 1;
+        if (i > 0) i = this.items.length + 1;
       }
 
-      let ep = this.eps[nextPlayingIndex];
+      let item = this.items[nextPlayingIndex];
 
-      if (ep) {
+      if (item) {
         this.$router.push({
-          name: "Watch",
-          query: { src: `${ep.src}\\${ep.name}`, root: this.$route.query.root }
+          path: "/watch" + item.hyperlink.href,
+          query: {
+            root: item.hyperlink.root
+          }
         });
       } else {
-        const eps = [...this.eps].reverse(); // Reverse order of episodes
+        const items = [...this.items].reverse(); // Reverse order of items
 
-        for (const _ of eps) {
+        for (const _ of items) {
           if (!_.isDir) {
             return this.$router.push({
-              name: "Watch",
+              path: "/watch" + _.hyperlink.href,
               query: {
-                src: `${_.src}\\${_.name}`,
-                root: this.$route.query.root
+                root: _.hyperlink.root
               }
             });
           }
         }
       }
     },
-    queryString(_) {
-      return qs.stringify(_);
+    getSiblings() {
+      const path = ["", ...this.$route.params.path.split(/[\\/]/)];
+      path.pop();
+
+      getItem(path.join("/"), { root: this.$route.query.root }).then(
+        _ => (this.items = _.data)
+      );
     }
   }
 };

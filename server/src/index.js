@@ -1,82 +1,34 @@
 const express = require('express');
-const {
-  lstatSync,
-  readdirSync,
-  createReadStream,
-  statSync,
-} = require('fs');
-const { join, extname } = require('path');
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
 const ip = require('ip');
-const mime = require('mime-types');
+const { getDataBySource, stream } = require('./utils');
 
-const { dirs, extensions } = require('./server.config.json');
+const { dirs } = require('./server.config.json');
 
 const app = express();
-
-app.use(morgan('combined'));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(express.static(`${__dirname}/dist`));
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+require('./plugins')(app);
 
 const PORT = process.env.PORT || 8081;
 const HOST = process.env.HOST || '0.0.0.0';
 
-const getDirsOrVids = (src) => readdirSync(src).map((name) => {
-  const isDir = lstatSync(join(src, name)).isDirectory();
-
-  return {
-    src,
-    name,
-    ext: extname(name),
-    isDir,
-  };
-}).filter((_) => _.isDir || extensions.includes(_.ext.toLowerCase()));
-
-app.get('/api/animes', (req, res) => {
-  const folders = dirs.map((dir) => getDirsOrVids(dir)).flat().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+app.get('/api/all', (req, res) => { // /api/all
+  const folders = dirs.map((dir) => getDataBySource(dir)).flat().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
   res.send(folders);
 });
 
-app.get('/api/anime', (req, res) => {
-  res.send(getDirsOrVids(join(req.query.root, req.query.dir)).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })));
+app.get(/\/api\/(.*)/, (req, res) => { // /api/Anime/A%20Certain Scientific Accelerator?root=D
+  const drive = req.query.root;
+  const [, , ...path] = req.path.split(/[\\/]/).map((_) => decodeURI(_));
+  const src = `${drive}:/${path.join('/')}`;
+
+  res.send(getDataBySource(src).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })));
 });
 
-app.get('/api/video', (req, res) => {
-  const [partialStart, partialEnd] = req.headers.range.replace(/bytes=/, '').split('-');
+app.get(/\/api-stream\/(.*)/, (req, res) => { // /api-stream/Anime/A%20Certain Scientific Accelerator?root=D
+  const drive = req.query.root;
+  const [, , ...path] = req.path.split(/[\\/]/).map((_) => decodeURI(_));
+  const streamSrc = `${drive}:/${path.join('/')}`;
 
-  const stats = statSync(req.query.src);
-  const totalSize = stats.size;
-  const mimeType = mime.contentType(extname(req.query.src));
-
-  const byteStart = parseInt(partialStart, 10);
-  const byteEnd = partialEnd ? parseInt(partialEnd, 10) : totalSize - 1;
-  const chunkSize = byteEnd - byteStart + 1;
-
-  if (chunkSize === totalSize) {
-    res.writeHead(200, {
-      'Accept-Ranges': 'bytes',
-      'Content-Type': mimeType,
-      'Content-Length': totalSize,
-    });
-  } else {
-    res.writeHead(206, {
-      'Content-Range': `bytes ${byteStart}-${byteEnd}/${totalSize}`,
-      'Accept-Ranges': 'bytes',
-      'Content-Type': mimeType,
-      'Content-Length': byteEnd - byteStart + 1,
-    });
-  }
-
-  const stream = createReadStream(req.query.src, { start: byteStart, end: byteEnd })
-    .on('open', () => stream.pipe(res))
-    .on('error', (err) => res.end(err));
+  stream(req, res, streamSrc);
 });
 
 app.listen(PORT, HOST, () => console.log(`Ready on http://${ip.address()}:${PORT}`));

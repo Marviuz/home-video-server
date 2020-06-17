@@ -10,14 +10,19 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    name: 'Animes',
-    component: Home
+    name: 'Home',
+    component: Home,
   },
   {
-    path: '/watch',
+    path: '/watch/:path(.*)',
     name: 'Watch',
     component: Watch
-  }
+  },
+  {
+    path: '*',
+    name: 'SubDir',
+    component: Home,
+  },
 ]
 
 const router = new VueRouter({
@@ -34,8 +39,8 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.name
-  if (to.name === 'Watch') document.title += ` ${to.query.src.split(/[\\\/]/g).pop()}`
+  if (to.name === 'SubDir' || to.name === 'Watch') document.title = [...to.path.split(/[\\/]/)].pop()
+  else document.title = to.name
   next()
 })
 

@@ -1,6 +1,6 @@
 {
   "name": "home-video-server",
-  "version": "0.1.1-beta.1",
+  "version": "1.0.0",
   "scripts": {
     "start": "node src/",
     "dev": "nodemon src/"
