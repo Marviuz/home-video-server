@@ -11,3 +11,8 @@
   ]
 }
 ```
+
+# TODO
+* Design video.
+* Next and prev button.
+* Picture in picture on route change.
