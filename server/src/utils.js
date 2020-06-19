@@ -15,8 +15,8 @@ exports.getDataBySource = (src) => readdirSync(src).map((name) => {
   return {
     src: `${src}/${name}`,
     name,
-    ext: extname(name),
-    isDir,
+    ...(!isDir && { ext: extname(name) }),
+    ...(isDir && { isDir }),
     hyperlink: {
       href: ['', ...path, name].join('/'),
       root: drive.replace(':', ''),
@@ -25,6 +25,11 @@ exports.getDataBySource = (src) => readdirSync(src).map((name) => {
 }).filter((_) => _.isDir || extensions.includes(_.ext.toLowerCase()));
 
 exports.stream = (req, res, src) => {
+  if (!req.range) {
+    console.log('return', req.range);
+    return;
+  }
+
   const [partialStart, partialEnd] = req.headers.range.replace(/bytes=/, '').split('-');
   const stats = statSync(src);
   const totalSize = stats.size;

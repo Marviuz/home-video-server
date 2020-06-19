@@ -6,6 +6,7 @@
           @wheel.prevent="onScroll"
           @keyup="handleHotkeys"
           @ended="playNext"
+          preload="auto"
           :src="src"
           :style="{ outline: 'none', width: '100%' }"
           controls

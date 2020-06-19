@@ -39,7 +39,8 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.name === 'SubDir' || to.name === 'Watch') document.title = [...to.path.split(/[\\/]/)].pop()
+  if (to.name === 'SubDir') document.title = [...to.path.split(/[\\/]/)].pop()
+  else if (to.name === 'Watch') document.title = 'Watch ' + [...to.path.split(/[\\/]/)].pop()
   else document.title = to.name
   next()
 })
