@@ -1,6 +1,6 @@
 {
   "name": "home-video-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,9 +9,11 @@
   "dependencies": {
     "axios": "^0.19.2",
     "core-js": "^3.6.5",
+    "moment": "^2.27.0",
     "node-ip": "^0.1.2",
     "nprogress": "^0.2.0",
     "query-string": "^6.13.1",
+    "video.js": "^7.8.2",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuetify": "^2.2.11"

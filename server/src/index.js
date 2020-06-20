@@ -5,7 +5,7 @@ const { getDataBySource, stream } = require('./utils');
 const { dirs } = require('./server.config.json');
 
 const app = express();
-require('./plugins')(app);
+require('./middlewares')(app);
 
 const PORT = process.env.PORT || 8081;
 const HOST = process.env.HOST || '0.0.0.0';

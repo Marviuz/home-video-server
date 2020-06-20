@@ -25,10 +25,7 @@ exports.getDataBySource = (src) => readdirSync(src).map((name) => {
 }).filter((_) => _.isDir || extensions.includes(_.ext.toLowerCase()));
 
 exports.stream = (req, res, src) => {
-  if (!req.range) {
-    console.log('return', req.range);
-    return;
-  }
+  if (!req.range) return;
 
   const [partialStart, partialEnd] = req.headers.range.replace(/bytes=/, '').split('-');
   const stats = statSync(src);

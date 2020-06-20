@@ -2,19 +2,17 @@
   <v-container fluid>
     <v-row>
       <v-col cols="12" md="8">
-        <video
-          @wheel.prevent="onScroll"
-          @keyup="handleHotkeys"
-          @ended="playNext"
-          preload="auto"
-          :src="src"
-          :style="{ outline: 'none', width: '100%' }"
-          controls
-          autoplay
-          ref="vid"
-        ></video>
-
         <v-card>
+          <app-video
+            ref="vid"
+            @keyup.native="handleHotkeys"
+            @wheel.native.prevent="onScroll"
+            @ended="playNext"
+            @skip-forward="playNext"
+            @skip-backward="playPrevious"
+            :replay-on-end="replayOnEnd"
+            :src="src"
+          ></app-video>
           <v-card-text>
             <v-card-title>{{$route.params.path.split(/[\/\\]/g).pop()}}</v-card-title>
           </v-card-text>
@@ -71,12 +69,17 @@ import qs from "query-string";
 import config from "@/config";
 import { getItem } from "@/services/axios";
 import { jsonify } from "@/utils/jsonify";
+import AppVideo from "@/components/AppVideo";
 
 export default {
+  components: {
+    AppVideo
+  },
   data() {
     return {
       config,
-      items: []
+      items: [],
+      replayOnEnd: false
     };
   },
   computed: {
@@ -90,7 +93,7 @@ export default {
     }
   },
   mounted() {
-    this.$refs.vid.focus(); // Apply focus to vid to apply hotkeys immediately.
+    // this.$refs.vid.focus(); // Apply focus to vid to apply hotkeys immediately.
   },
   created() {
     this.getSiblings();
@@ -103,8 +106,10 @@ export default {
       const delta = Math.max(-1, Math.min(1, evt.wheelDelta || -evt.detail));
 
       try {
-        this.$refs.vid.volume += 0.1 * delta;
-      } catch (err) {}
+        this.$refs.vid.volume += 0.05 * delta;
+      } catch (err) {
+        /* Empty catch */
+      }
     },
     handleHotkeys(evt) {
       const key = event.key.toLowerCase();
@@ -113,7 +118,7 @@ export default {
         // Fullscreen
         case "f":
           if (document.fullscreenElement) document.exitFullscreen();
-          else this.$refs.vid.requestFullscreen();
+          else evt.target.requestFullscreen();
           break;
         // Mute
         case "m":
@@ -132,15 +137,15 @@ export default {
           break;
       }
     },
-    playNext() {
+    playNext(evt) {
       const { query, params } = this.$route;
 
       const playables = this.items.filter((item, i) => !item.isDir).length;
 
       if (playables === 1) {
         // Only 1 item in playlist
-        this.$refs.vid.currentTime = 0;
-        return this.$refs.vid.play();
+        this.$refs.vid.player.currentTime(0);
+        return this.$refs.player.play();
       }
 
       const nextPlayingIndex =
@@ -177,8 +182,8 @@ export default {
 
       if (playables === 1) {
         // Only 1 item in playlist
-        this.$refs.vid.currentTime = 0;
-        return this.$refs.vid.play();
+        this.$refs.vid.player.currentTime(0);
+        return this.$refs.vid.player.play();
       }
 
       const playingIndex = this.items.findIndex(
