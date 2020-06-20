@@ -158,6 +158,8 @@ export default {
     if (this.player) {
       this.player.dispose();
     }
+
+    window.removeEventListener("keydown", this.handleHotKeys);
   },
   watch: {
     $route(to, from) {
@@ -234,13 +236,13 @@ export default {
           break;
         // Fullscreen
         case "f":
-          this.handleFullScreen();
           evt.preventDefault();
+          this.handleFullScreen();
           break;
         // Mute
         case "m":
-          this.handleVolumeMute();
           evt.preventDefault();
+          this.handleVolumeMute();
           break;
       }
     },
