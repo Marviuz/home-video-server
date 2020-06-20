@@ -4,13 +4,13 @@
       <v-col cols="12" md="8">
         <v-card>
           <app-video
-            ref="vid"
             @keyup.native="handleHotkeys"
             @wheel.native.prevent="onScroll"
             @ended="playNext"
             @skip-forward="playNext"
             @skip-backward="playPrevious"
             :replay-on-end="replayOnEnd"
+            ref="vid"
             :src="src"
           ></app-video>
           <v-card-text>
@@ -19,7 +19,69 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="4">
-        <v-list>
+        <v-container>
+          <v-row justify="end">
+            <v-btn-toggle v-model="display" mandatory>
+              <v-btn>
+                <v-icon>mdi-view-grid</v-icon>
+              </v-btn>
+              <v-btn>
+                <v-icon>mdi-view-list</v-icon>
+              </v-btn>
+            </v-btn-toggle>
+          </v-row>
+        </v-container>
+
+        <v-row v-if="display === 0">
+          <v-col cols="6" v-for="item in items" :key="JSON.stringify(item)">
+            <v-card
+              exact
+              v-if="item.isDir"
+              :key="JSON.stringify(item)"
+              :to="{ path: item.hyperlink.href, query: { root: item.hyperlink.root } }"
+            >
+              <v-container>
+                <v-row justify="center">
+                  <v-col class="flex-shrink-1 flex-grow-0">
+                    <v-icon :style="{fontSize: '5rem'}">mdi-folder</v-icon>
+                  </v-col>
+                </v-row>
+              </v-container>
+              <v-card-title>
+                <div class="text-truncate">{{item.name}}</div>
+              </v-card-title>
+              <v-card-subtitle>
+                <div class="text-truncate">{{item.src}}</div>
+              </v-card-subtitle>
+            </v-card>
+
+            <v-card
+              exact
+              v-else
+              :key="JSON.stringify(item)"
+              :to="{ path: '/watch' + item.hyperlink.href, query: { root: item.hyperlink.root } }"
+              exact-active-class="blue"
+            >
+              <v-container>
+                <v-row justify="center">
+                  <v-col class="flex-shrink-1 flex-grow-0">
+                    <v-icon
+                      :style="{fontSize: '5rem'}"
+                    >{{ $route.params.path.split(/[\/\\]/g).pop() === item.name ? 'mdi-play-circle' : 'mdi-filmstrip' }}</v-icon>
+                  </v-col>
+                </v-row>
+              </v-container>
+              <v-card-title>
+                <div class="text-truncate">{{item.name}}</div>
+              </v-card-title>
+              <v-card-subtitle>
+                <div class="text-truncate">{{item.src}}</div>
+              </v-card-subtitle>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-list v-else>
           <template v-for="item in items">
             <v-list-item
               exact
@@ -76,10 +138,14 @@ export default {
     AppVideo
   },
   data() {
+    const ls = localStorage.getItem("display");
+
     return {
       config,
       items: [],
-      replayOnEnd: false
+      replayOnEnd: false,
+
+      displayValue: ls ? parseInt(ls, 10) : 0
     };
   },
   computed: {
@@ -90,6 +156,15 @@ export default {
         url: `http://${config.ip}:8081/api-stream/${params.path}`,
         query: { root: query.root }
       });
+    },
+    display: {
+      get() {
+        return this.displayValue;
+      },
+      set(val) {
+        this.displayValue = val;
+        localStorage.setItem("display", val);
+      }
     }
   },
   mounted() {
@@ -145,7 +220,7 @@ export default {
       if (playables === 1) {
         // Only 1 item in playlist
         this.$refs.vid.player.currentTime(0);
-        return this.$refs.player.play();
+        return this.$refs.vid.player.load();
       }
 
       const nextPlayingIndex =
