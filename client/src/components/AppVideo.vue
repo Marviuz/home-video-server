@@ -280,14 +280,6 @@ export default {
   flex-shrink: 0;
 }
 
-.app-player__previous-button,
-.app-player__next-button {
-  height: 100%;
-  width: 100%;
-  outline: none;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
 .app-player__time-text {
   font-size: 3rem;
   margin-left: 15px;
