@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="app-player-container"
-    ref="playerContainer"
-    @keyup="evt => $emit('keyup', evt)"
-    @mousemove="handleCursorInPlayer"
-  >
+  <div class="app-player-container" ref="playerContainer" @mousemove="handleCursorInPlayer">
     <video
       ref="videoPlayer"
       @wheel="$emit('wheel', evt)"
@@ -59,7 +54,7 @@
                   hide-details
                   reverse
                   :append-icon="volume > .5 ? 'mdi-volume-high' : volume > 0 ? 'mdi-volume-medium' : 'mdi-volume-mute'"
-                  @click:append="handleVolumeIcon"
+                  @click:append="handleVolumeMute"
                 ></v-slider>
               </v-col>
             </template>
@@ -87,10 +82,6 @@ export default {
     src: {
       type: String,
       default: "//:0"
-    },
-    replayOnEnd: {
-      type: Boolean,
-      default: false
     }
   },
   data() {
@@ -160,6 +151,8 @@ export default {
         }
       })
     );
+
+    window.addEventListener("keydown", this.handleHotKeys);
   },
   beforeDestroy() {
     if (this.player) {
@@ -209,7 +202,7 @@ export default {
         }
       }, 2000);
     },
-    handleVolumeIcon(evt) {
+    handleVolumeMute() {
       if (this.volume) {
         localStorage.setItem("tempVolume", this.volume);
         this.volume = 0;
@@ -219,7 +212,7 @@ export default {
       }
     },
     handleFullScreen(evt) {
-      if (evt.type === "dblclick" && isMobile) return;
+      if (evt && evt.type === "dblclick" && isMobile) return;
 
       if (!document.fullscreenElement) {
         this.$refs.playerContainer.requestFullscreen();
@@ -229,6 +222,27 @@ export default {
       }
 
       return document.exitFullscreen();
+    },
+    handleHotKeys(evt) {
+      const key = evt.key.toLowerCase();
+
+      switch (key) {
+        // Play or pause
+        case " ":
+          evt.preventDefault();
+          this.playOrPause();
+          break;
+        // Fullscreen
+        case "f":
+          this.handleFullScreen();
+          evt.preventDefault();
+          break;
+        // Mute
+        case "m":
+          this.handleVolumeMute();
+          evt.preventDefault();
+          break;
+      }
     },
     convertToReadable(_) {
       return videojs.formatTime();

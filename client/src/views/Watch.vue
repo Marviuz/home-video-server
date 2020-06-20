@@ -4,14 +4,12 @@
       <v-col cols="12" md="8">
         <v-card>
           <app-video
-            @keyup.native="handleHotkeys"
             @wheel.native.prevent="onScroll"
             @ended="playNext"
             @skip-forward="playNext"
             @skip-backward="playPrevious"
-            :replay-on-end="replayOnEnd"
-            ref="vid"
             :src="src"
+            ref="vid"
           ></app-video>
           <v-card-text>
             <v-card-title>{{$route.params.path.split(/[\/\\]/g).pop()}}</v-card-title>
@@ -143,7 +141,6 @@ export default {
     return {
       config,
       items: [],
-      replayOnEnd: false,
 
       displayValue: ls ? parseInt(ls, 10) : 0
     };
@@ -169,6 +166,7 @@ export default {
   },
   mounted() {
     // this.$refs.vid.focus(); // Apply focus to vid to apply hotkeys immediately.
+    window.addEventListener("keydown", this.handleHotkeys);
   },
   created() {
     this.getSiblings();
@@ -187,27 +185,18 @@ export default {
       }
     },
     handleHotkeys(evt) {
-      const key = event.key.toLowerCase();
+      const key = evt.key.toLowerCase();
 
       switch (key) {
-        // Fullscreen
-        case "f":
-          if (document.fullscreenElement) document.exitFullscreen();
-          else evt.target.requestFullscreen();
-          break;
-        // Mute
-        case "m":
-          if (this.$refs.vid.volume) {
-            localStorage.setItem("volume", this.$refs.vid.volume);
-            this.$refs.vid.volume = 0;
-          } else this.$refs.vid.volume = localStorage.getItem("volume");
-          break;
-        // Next
         case "n":
+        case "mediatracknext":
+          evt.preventDefault();
           this.playNext();
           break;
         // Previous
         case "p":
+        case "mediatrackprevious":
+          evt.preventDefault();
           this.playPrevious();
           break;
       }
