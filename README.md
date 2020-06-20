@@ -13,7 +13,6 @@
 ```
 
 # TODO
-* Design video.
-* Next and prev button.
+* Add forward/backward 5s in player
 * Picture in picture on route change.
 * Add favicon
