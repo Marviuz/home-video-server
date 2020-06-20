@@ -14,60 +14,59 @@
     <div class="app-player-overlay" ref="overlay">
       <div class="app-player__overlay" @dblclick="handleFullScreen" @click="playOrPause">
         <span
-          ref="currentTimeDisplay"
-          class="app-player__time-text"
+          :class="{'app-player__time-text': true, 'flow-text': true, 'pa-5': !isMobile, 'pa-3': isMobile}"
         >{{secondsToTime(localData.currentTime)}}</span>
       </div>
       <div class="app-player-controls">
-        <v-container>
-          <v-slider
-            :label="secondsToTime(localData.duration)"
-            inverse-label
-            @start="startSeek"
-            @end="endSeek"
-            @change="val => this.player.currentTime(val)"
-            :max="localData.duration"
-            :step=".1"
-            v-model="localData.currentTime"
-            hide-details
-          ></v-slider>
-          <v-row>
-            <v-col cols="2">
-              <!-- Spacer -->
+        <v-slider
+          class="px-2"
+          :label="secondsToTime(localData.duration)"
+          inverse-label
+          @start="startSeek"
+          @end="endSeek"
+          @change="val => this.player.currentTime(val)"
+          :max="localData.duration"
+          :step=".1"
+          v-model="localData.currentTime"
+          hide-details
+        ></v-slider>
+        <v-container fluid class="pt-0">
+          <v-row no-gutters align="center" class="flex-nowrap">
+            <v-col class="flex-shrink-1 flex-grow-0 pr-3">
+              <v-btn small fab @click="playOrPause">
+                <v-icon>{{player && player.paused() ? 'mdi-play' : 'mdi-pause'}}</v-icon>
+              </v-btn>
             </v-col>
-            <v-col>
-              <v-container :style="{padding: 0}">
-                <v-row no-gutters justify="center" align="center">
-                  <v-col class="flex-shrink-1 flex-grow-0 px-5">
-                    <v-btn @click="evt => $emit('skip-backward', evt)" fab small depressed>
-                      <v-icon>mdi-skip-backward</v-icon>
-                    </v-btn>
-                  </v-col>
-                  <v-col class="flex-shrink-1 flex-grow-0 px-5">
-                    <v-btn fab large @click="playOrPause">
-                      <v-icon large>{{player && player.paused() ? 'mdi-play' : 'mdi-pause'}}</v-icon>
-                    </v-btn>
-                  </v-col>
-                  <v-col class="flex-shrink-1 flex-grow-0 px-5">
-                    <v-btn @click="evt => $emit('skip-forward', evt)" fab small>
-                      <v-icon>mdi-skip-forward</v-icon>
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-container>
+            <v-col class="flex-shrink-1 flex-grow-0 px-3">
+              <v-btn x-small @click="evt => $emit('skip-backward', evt)" fab depressed>
+                <v-icon>mdi-skip-backward</v-icon>
+              </v-btn>
             </v-col>
-            <v-col cols="2">
-              <v-slider
-                :label="(volume * 100).toFixed()"
-                :step=".01"
-                :min="0"
-                :max="1"
-                v-model="volume"
-                hide-details
-                reverse
-                :append-icon="volume > .5 ? 'mdi-volume-high' : volume > 0 ? 'mdi-volume-medium' : 'mdi-volume-mute'"
-                @click:append="handleVolumeIcon"
-              ></v-slider>
+            <v-col class="flex-shrink-1 flex-grow-0 px-3">
+              <v-btn x-small @click="evt => $emit('skip-forward', evt)" fab>
+                <v-icon>mdi-skip-forward</v-icon>
+              </v-btn>
+            </v-col>
+            <v-spacer></v-spacer>
+            <template v-if="!isMobile">
+              <v-col cols="2">
+                <v-slider
+                  :label="(volume * 100).toFixed()"
+                  :step=".01"
+                  :min="0"
+                  :max="1"
+                  v-model="volume"
+                  hide-details
+                  reverse
+                  :append-icon="volume > .5 ? 'mdi-volume-high' : volume > 0 ? 'mdi-volume-medium' : 'mdi-volume-mute'"
+                  @click:append="handleVolumeIcon"
+                ></v-slider>
+              </v-col>
+            </template>
+            <v-col class="flex-shrink-1 flex-grow-0 px-3" v-else>
+              <v-btn x-small @click="handleFullScreen" fab>
+                <v-icon>mdi-fullscreen</v-icon>
+              </v-btn>
             </v-col>
           </v-row>
         </v-container>
@@ -78,6 +77,7 @@
 
 <script>
 import moment from "moment";
+import { isMobile } from "@/utils";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 
@@ -99,6 +99,7 @@ export default {
       : 1;
 
     return {
+      isMobile,
       mediaEvents: ["play", "pause", "timeupdate", "seeked"],
 
       mouseInPlayerTimeout: null,
@@ -217,9 +218,15 @@ export default {
         localStorage.removeItem("tempVolume");
       }
     },
-    handleFullScreen() {
-      if (!document.fullscreenElement)
-        return this.$refs.playerContainer.requestFullscreen();
+    handleFullScreen(evt) {
+      if (evt.type === "dblclick" && isMobile) return;
+
+      if (!document.fullscreenElement) {
+        this.$refs.playerContainer.requestFullscreen();
+
+        if (isMobile) return screen.orientation.lock("landscape");
+        else return;
+      }
 
       return document.exitFullscreen();
     },
@@ -281,7 +288,7 @@ export default {
 }
 
 .app-player__time-text {
-  font-size: 3rem;
+  font-size: 300%;
   margin-left: 15px;
   pointer-events: none;
   position: absolute;
@@ -293,5 +300,141 @@ export default {
   flex-shrink: 1;
   width: 100%;
   background: linear-gradient(to top, black, transparent);
+  height: 85px;
+}
+</style>
+
+<style scoped>
+/* From Materialize v1.0.0 (http://materializecss.com) */
+@media only screen and (min-width: 360px) {
+  .flow-text {
+    font-size: 1.2rem;
+  }
+}
+
+@media only screen and (min-width: 390px) {
+  .flow-text {
+    font-size: 1.224rem;
+  }
+}
+
+@media only screen and (min-width: 420px) {
+  .flow-text {
+    font-size: 1.248rem;
+  }
+}
+
+@media only screen and (min-width: 450px) {
+  .flow-text {
+    font-size: 1.272rem;
+  }
+}
+
+@media only screen and (min-width: 480px) {
+  .flow-text {
+    font-size: 1.296rem;
+  }
+}
+
+@media only screen and (min-width: 510px) {
+  .flow-text {
+    font-size: 1.32rem;
+  }
+}
+
+@media only screen and (min-width: 540px) {
+  .flow-text {
+    font-size: 1.344rem;
+  }
+}
+
+@media only screen and (min-width: 570px) {
+  .flow-text {
+    font-size: 1.368rem;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .flow-text {
+    font-size: 1.392rem;
+  }
+}
+
+@media only screen and (min-width: 630px) {
+  .flow-text {
+    font-size: 1.416rem;
+  }
+}
+
+@media only screen and (min-width: 660px) {
+  .flow-text {
+    font-size: 1.44rem;
+  }
+}
+
+@media only screen and (min-width: 690px) {
+  .flow-text {
+    font-size: 1.464rem;
+  }
+}
+
+@media only screen and (min-width: 720px) {
+  .flow-text {
+    font-size: 1.488rem;
+  }
+}
+
+@media only screen and (min-width: 750px) {
+  .flow-text {
+    font-size: 1.512rem;
+  }
+}
+
+@media only screen and (min-width: 780px) {
+  .flow-text {
+    font-size: 1.536rem;
+  }
+}
+
+@media only screen and (min-width: 810px) {
+  .flow-text {
+    font-size: 1.56rem;
+  }
+}
+
+@media only screen and (min-width: 840px) {
+  .flow-text {
+    font-size: 1.584rem;
+  }
+}
+
+@media only screen and (min-width: 870px) {
+  .flow-text {
+    font-size: 1.608rem;
+  }
+}
+
+@media only screen and (min-width: 900px) {
+  .flow-text {
+    font-size: 1.632rem;
+  }
+}
+
+@media only screen and (min-width: 930px) {
+  .flow-text {
+    font-size: 1.656rem;
+  }
+}
+
+@media only screen and (min-width: 960px) {
+  .flow-text {
+    font-size: 1.68rem;
+  }
+}
+
+@media only screen and (max-width: 360px) {
+  .flow-text {
+    font-size: 1.2rem;
+  }
 }
 </style>
