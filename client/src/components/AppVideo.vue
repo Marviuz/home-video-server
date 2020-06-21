@@ -227,12 +227,36 @@ export default {
     },
     handleHotKeys(evt) {
       const key = evt.key.toLowerCase();
+      console.log(key);
 
       switch (key) {
         // Play or pause
         case " ":
           evt.preventDefault();
           this.playOrPause();
+          break;
+        // Add 5 seconds to current time
+        case "arrowright":
+          evt.preventDefault();
+          if (this.localData.currentTime + 5 < this.localData.duration)
+            this.player.currentTime(this.player.currentTime() + 5);
+          break;
+        // Subtract 5 seconds to current time
+        case "arrowleft":
+          evt.preventDefault();
+          if (this.localData.currentTime - 5 > 0)
+            this.player.currentTime(this.player.currentTime() - 5);
+          else this.player.currentTime(0);
+          break;
+        // current time = 0
+        case "home":
+          evt.preventDefault();
+          this.player.currentTime(0);
+          break;
+        // current time = duration
+        case "end":
+          evt.preventDefault();
+          this.player.currentTime(this.localData.duration);
           break;
         // Fullscreen
         case "f":

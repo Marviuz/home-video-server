@@ -128,7 +128,6 @@
 import qs from "query-string";
 import config from "@/config";
 import { getItem } from "@/services/axios";
-import { jsonify } from "@/utils";
 import AppVideo from "@/components/AppVideo";
 
 export default {
