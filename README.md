@@ -3,7 +3,7 @@
 ```json
 {
   "dirs": [
-    "D:/Anime"
+    "D:/Movies"
   ],
   "extensions": [
     ".mp4",
@@ -14,4 +14,3 @@
 
 # TODO
 * Picture in picture on route change.
-* Add favicon

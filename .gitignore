@@ -23,3 +23,7 @@ pnpm-debug.log*
 
 # server config
 server.config.json
+
+# user convinience script
+update.bat
+start.bat
