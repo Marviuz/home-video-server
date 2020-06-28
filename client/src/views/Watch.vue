@@ -39,93 +39,110 @@
           <v-card-text>
             <v-row v-if="display === 0">
               <v-col cols="6" v-for="item in items" :key="JSON.stringify(item)">
-                <v-card
-                  exact
-                  v-if="item.isDir"
-                  :key="JSON.stringify(item)"
-                  :to="{ path: item.hyperlink.href, query: { root: item.hyperlink.root } }"
-                >
-                  <v-container>
-                    <v-row justify="center">
-                      <v-avatar :size="100">
-                        <v-icon :size="100">mdi-folder</v-icon>
-                      </v-avatar>
-                    </v-row>
-                  </v-container>
-                  <v-card-title>
-                    <div class="text-truncate">{{item.name}}</div>
-                  </v-card-title>
-                  <v-card-subtitle>
-                    <div class="text-truncate">{{item.src}}</div>
-                  </v-card-subtitle>
-                </v-card>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-card
+                      exact
+                      v-if="item.isDir"
+                      :key="JSON.stringify(item)"
+                      :to="{ path: item.hyperlink.href, query: { root: item.hyperlink.root } }"
+                      v-on="on"
+                      v-bind="attrs"
+                    >
+                      <v-container>
+                        <v-row justify="center">
+                          <v-avatar :size="100">
+                            <v-icon :size="100">mdi-folder</v-icon>
+                          </v-avatar>
+                        </v-row>
+                      </v-container>
+                      <v-card-title>
+                        <div class="text-truncate">{{item.name}}</div>
+                      </v-card-title>
+                      <v-card-subtitle>
+                        <div class="text-truncate">{{item.src}}</div>
+                      </v-card-subtitle>
+                    </v-card>
 
-                <v-card
-                  exact
-                  v-else
-                  :key="JSON.stringify(item)"
-                  :to="{ path: '/watch' + item.hyperlink.href, query: { root: item.hyperlink.root } }"
-                  exact-active-class="blue"
-                >
-                  <v-container>
-                    <v-row justify="center">
-                      <v-avatar :size="100">
-                        <v-icon
-                          :size="100"
-                        >{{ $route.params.path.split(/[\/\\]/g).pop() === item.name ? 'mdi-play-circle' : 'mdi-filmstrip' }}</v-icon>
-                      </v-avatar>
-                    </v-row>
-                  </v-container>
-                  <v-card-title>
-                    <div class="text-truncate">{{item.name}}</div>
-                  </v-card-title>
-                  <v-card-subtitle>
-                    <div class="text-truncate">{{item.src}}</div>
-                  </v-card-subtitle>
-                </v-card>
+                    <v-card
+                      exact
+                      v-else
+                      :key="JSON.stringify(item)"
+                      :to="{ path: '/watch' + item.hyperlink.href, query: { root: item.hyperlink.root } }"
+                      exact-active-class="blue"
+                      v-on="on"
+                      v-bind="attrs"
+                    >
+                      <v-container>
+                        <v-row justify="center">
+                          <v-avatar :size="100">
+                            <v-icon
+                              :size="100"
+                            >{{ $route.params.path.split(/[\/\\]/g).pop() === item.name ? 'mdi-play-circle' : 'mdi-filmstrip' }}</v-icon>
+                          </v-avatar>
+                        </v-row>
+                      </v-container>
+                      <v-card-title>
+                        <div class="text-truncate">{{item.name}}</div>
+                      </v-card-title>
+                      <v-card-subtitle>
+                        <div class="text-truncate">{{item.src}}</div>
+                      </v-card-subtitle>
+                    </v-card>
+                  </template>
+                  <span class="text-h6">{{item.name}}</span>
+                </v-tooltip>
               </v-col>
             </v-row>
 
             <v-list v-else>
               <template v-for="item in items">
-                <v-list-item
-                  exact
-                  v-if="!item.isDir"
-                  :key="JSON.stringify(item)"
-                  :to="{ path: '/watch' + item.hyperlink.href, query: { root: item.hyperlink.root } }"
-                >
-                  <v-list-item-avatar>
-                    <v-icon
-                      :size="40"
-                    >{{ $route.params.path.split(/[\/\\]/g).pop() === item.name ? 'mdi-play-circle' : 'mdi-filmstrip' }}</v-icon>
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title>{{item.name}}</v-list-item-title>
-                    <v-list-item-subtitle>{{item.src}}\{{item.name}}</v-list-item-subtitle>
-                    <v-list-item-subtitle
-                      class="green--text"
-                      v-if="$route.params.path.split(/[\/\\]/g).pop() === item.name"
+                <v-tooltip bottom :key="JSON.stringify(item)">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-list-item
+                      v-on="on"
+                      v-bind="attrs"
+                      exact
+                      v-if="!item.isDir"
+                      :to="{ path: '/watch' + item.hyperlink.href, query: { root: item.hyperlink.root } }"
                     >
-                      <v-icon>mdi-circle-medium</v-icon>
-                      <em>Currently Playing</em>
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
+                      <v-list-item-avatar>
+                        <v-icon
+                          :size="40"
+                        >{{ $route.params.path.split(/[\/\\]/g).pop() === item.name ? 'mdi-play-circle' : 'mdi-filmstrip' }}</v-icon>
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title>{{item.name}}</v-list-item-title>
+                        <v-list-item-subtitle>{{item.src}}\{{item.name}}</v-list-item-subtitle>
+                        <v-list-item-subtitle
+                          class="green--text"
+                          v-if="$route.params.path.split(/[\/\\]/g).pop() === item.name"
+                        >
+                          <v-icon>mdi-circle-medium</v-icon>
+                          <em>Currently Playing</em>
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
 
-                <v-list-item
-                  exact
-                  v-else
-                  :key="JSON.stringify(item)"
-                  :to="{ path: item.hyperlink.href, query: { root: item.hyperlink.root } }"
-                >
-                  <v-list-item-avatar>
-                    <v-icon :size="40">mdi-folder</v-icon>
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title>{{item.name}}</v-list-item-title>
-                    <v-list-item-subtitle>{{item.src}}/{{item.name}}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
+                    <v-list-item
+                      v-on="on"
+                      v-bind="attrs"
+                      exact
+                      v-else
+                      :key="JSON.stringify(item)"
+                      :to="{ path: item.hyperlink.href, query: { root: item.hyperlink.root } }"
+                    >
+                      <v-list-item-avatar>
+                        <v-icon :size="40">mdi-folder</v-icon>
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title>{{item.name}}</v-list-item-title>
+                        <v-list-item-subtitle>{{item.src}}/{{item.name}}</v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </template>
+                  <span class="text-h6">{{item.name}}</span>
+                </v-tooltip>
               </template>
             </v-list>
           </v-card-text>
