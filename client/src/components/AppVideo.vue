@@ -8,14 +8,18 @@
     ></video>
     <div class="app-player-overlay" ref="overlay">
       <div class="app-player__overlay" @dblclick="handleFullScreen" @click="playOrPause">
-        <span
+        <div
           :class="{'app-player__time-text': true, 'flow-text': true, 'pa-5': !isMobile, 'pa-3': isMobile}"
-        >{{secondsToTime(localData.currentTime)}}</span>
+        >
+          <v-icon class="mr-3" :size="30">{{player && player.paused() ? 'mdi-play' : 'mdi-pause'}}</v-icon>
+          <span>{{secondsToTime(localData.currentTime)}}</span>
+        </div>
       </div>
       <div class="app-player-controls">
         <v-slider
           class="px-2"
           :label="secondsToTime(localData.duration)"
+          thumb-label="always"
           inverse-label
           @start="startSeek"
           @end="endSeek"
@@ -24,7 +28,9 @@
           :step=".1"
           v-model="localData.currentTime"
           hide-details
-        ></v-slider>
+        >
+          <template v-slot:thumb-label="{ value }">{{secondsToTime(value)}}</template>
+        </v-slider>
         <v-container fluid class="pt-0">
           <v-row no-gutters align="center" class="flex-nowrap">
             <v-col class="flex-shrink-1 flex-grow-0 pr-3">
@@ -227,7 +233,6 @@ export default {
     },
     handleHotKeys(evt) {
       const key = evt.key.toLowerCase();
-      console.log(key);
 
       switch (key) {
         // Play or pause
@@ -328,11 +333,13 @@ export default {
 }
 
 .app-player__time-text {
-  font-size: 300%;
   margin-left: 15px;
   pointer-events: none;
   position: absolute;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .app-player-controls {

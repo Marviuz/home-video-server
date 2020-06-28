@@ -1,6 +1,10 @@
 <template>
   <v-container>
-    <v-row justify="end">
+    <v-toolbar>
+      <v-btn icon large :to="upperLevelTo" v-if="$route.path !== '/'">
+        <v-icon>mdi-arrow-up</v-icon>
+      </v-btn>
+      <v-spacer></v-spacer>
       <v-btn-toggle v-model="display" mandatory>
         <v-btn>
           <v-icon>mdi-view-grid</v-icon>
@@ -9,7 +13,7 @@
           <v-icon>mdi-view-list</v-icon>
         </v-btn>
       </v-btn-toggle>
-    </v-row>
+    </v-toolbar>
 
     <v-row v-if="display === 0">
       <v-col cols="6" sm="4" md="3" lg="2" v-for="item in items" :key="JSON.stringify(item)">
@@ -21,9 +25,9 @@
         >
           <v-container>
             <v-row justify="center">
-              <v-col class="flex-shrink-1 flex-grow-0">
-                <v-icon :style="{fontSize: '5rem'}">mdi-folder</v-icon>
-              </v-col>
+              <v-avatar :size="100">
+                <v-icon :size="100">mdi-folder</v-icon>
+              </v-avatar>
             </v-row>
           </v-container>
           <v-card-title>
@@ -42,9 +46,9 @@
         >
           <v-container>
             <v-row justify="center">
-              <v-col class="flex-shrink-1 flex-grow-0">
-                <v-icon :style="{fontSize: '5rem'}">mdi-play-circle</v-icon>
-              </v-col>
+              <v-avatar :size="100">
+                <v-icon :size="100">mdi-play-circle</v-icon>
+              </v-avatar>
             </v-row>
           </v-container>
           <v-card-title>
@@ -65,9 +69,9 @@
           :key="JSON.stringify(item)"
           :to="{ path: item.hyperlink.href, query: { root: item.hyperlink.root } }"
         >
-          <v-list-item-icon>
-            <v-icon>mdi-folder</v-icon>
-          </v-list-item-icon>
+          <v-list-item-avatar>
+            <v-icon :size="40">mdi-folder</v-icon>
+          </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title>{{item.name}}</v-list-item-title>
             <v-list-item-subtitle>{{item.src}}</v-list-item-subtitle>
@@ -80,9 +84,9 @@
           :key="JSON.stringify(item)"
           :to="{ path: '/watch' + item.hyperlink.href, query: { root: item.hyperlink.root } }"
         >
-          <v-list-item-icon>
-            <v-icon>mdi-play-circle</v-icon>
-          </v-list-item-icon>
+          <v-list-item-avatar>
+            <v-icon :size="40">mdi-play-circle</v-icon>
+          </v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title>{{item.name}}</v-list-item-title>
             <v-list-item-subtitle>{{item.src}}</v-list-item-subtitle>
@@ -114,6 +118,18 @@ export default {
         this.displayValue = val;
         localStorage.setItem("display", val);
       }
+    },
+    upperLevelTo() {
+      if (!this.$route.path.split("/").slice(2, -1).length)
+        return { path: "/" };
+
+      return {
+        path: `/${this.$route.path
+          .split("/")
+          .slice(1, -1)
+          .join("/")}`,
+        query: { root: this.$route.query.root }
+      };
     }
   },
   watch: {
